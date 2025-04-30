@@ -1,0 +1,25 @@
+# Ignore environment files
+.env
+
+# Ignore SSH keys
+*.pem
+*.key
+
+# Ignore temporary files
+*.log
+*.tmp
+
+# Ignore Docker build artifacts
+*.tar
+*.img
+
+# Ignore node_modules or vendor directories
+node_modules/
+vendor/
+
+# Ignore secrets configuration
+secrets.yml
+
+# Ignore IDE and editor files
+.vscode/
+.idea/

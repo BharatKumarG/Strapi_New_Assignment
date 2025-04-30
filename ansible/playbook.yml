@@ -1,0 +1,77 @@
+---
+- name: Configure AWS EC2 for Yii2 + Docker Swarm
+  hosts: all
+  become: true
+
+  vars:
+    docker_packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - nginx
+
+    python_packages:
+      - python3-pip
+      - python3-jsondiff
+
+    docker_compose_url: https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-linux-x86_64
+    docker_compose_dest: /usr/local/bin/docker-compose
+
+  tasks:
+
+    - name: Install dependencies
+      apt:
+        name: "{{ docker_packages }}"
+        state: present
+        update_cache: yes
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Install Docker Compose
+      get_url:
+        url: "{{ docker_compose_url }}"
+        dest: "{{ docker_compose_dest }}"
+        mode: '0755'
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Install Python dependencies
+      apt:
+        name: "{{ python_packages }}"
+        state: present
+
+    # Optional: Use a virtual environment if pip upgrade or custom packages are required
+    # - name: Create virtual environment
+    #   command: python3 -m venv /opt/venv
+
+    # - name: Upgrade pip inside venv (optional)
+    #   command: /opt/venv/bin/pip install -U pip
+
+    # - name: Install packages inside venv (optional)
+    #   command: /opt/venv/bin/pip install somepackage
+
+    - name: Ensure Docker is working
+      command: docker --version
+      register: docker_version_output
+
+    - debug:
+        var: docker_version_output.stdout
